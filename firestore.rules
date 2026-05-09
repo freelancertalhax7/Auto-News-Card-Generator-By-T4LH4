@@ -1,0 +1,54 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    // Default deny
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // NewsCards collection
+    match /newsCards/{cardId} {
+      function isValidNewsCard(data) {
+        return data.userId is string &&
+               data.title is string && data.title.size() <= 500 &&
+               data.createdAt == request.time &&
+               (data.excerpt == null || (data.excerpt is string && data.excerpt.size() <= 2000)) &&
+               (data.source == null || (data.source is string && data.source.size() <= 100)) &&
+               (data.imageUrl == null || (data.imageUrl is string && data.imageUrl.size() <= 2048));
+      }
+
+      allow read: if resource.data.isPublic == true || isOwner(resource.data.userId);
+      
+      allow list: if isSignedIn() && (
+        resource.data.isPublic == true || 
+        resource.data.userId == request.auth.uid
+      );
+
+      allow create: if isSignedIn() && 
+                    isOwner(request.resource.data.userId) && 
+                    isValidNewsCard(request.resource.data) &&
+                    isValidId(cardId);
+
+      allow update: if isOwner(resource.data.userId) && 
+                    isOwner(request.resource.data.userId) &&
+                    request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+                      'title', 'excerpt', 'source', 'date', 'imageUrl', 'themeId', 'isPublic', 'customization'
+                    ]);
+
+      allow delete: if isOwner(resource.data.userId);
+    }
+  }
+}

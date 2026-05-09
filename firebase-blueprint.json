@@ -1,0 +1,70 @@
+{
+  "entities": {
+    "NewsCard": {
+      "title": "News Card",
+      "description": "A generated news photocard",
+      "type": "object",
+      "properties": {
+        "userId": {
+          "type": "string"
+        },
+        "title": {
+          "type": "string"
+        },
+        "excerpt": {
+          "type": "string"
+        },
+        "source": {
+          "type": "string"
+        },
+        "date": {
+          "type": "string"
+        },
+        "imageUrl": {
+          "type": "string"
+        },
+        "themeId": {
+          "type": "string"
+        },
+        "isPublic": {
+          "type": "boolean"
+        },
+        "customization": {
+          "type": "object",
+          "properties": {
+            "titleFont": {
+              "type": "string"
+            },
+            "titleColor": {
+              "type": "string"
+            },
+            "backgroundColor": {
+              "type": "string"
+            },
+            "accentColor": {
+              "type": "string"
+            },
+            "overlayOpacity": {
+              "type": "number"
+            }
+          }
+        },
+        "createdAt": {
+          "type": "string",
+          "format": "date-time"
+        }
+      },
+      "required": [
+        "userId",
+        "title",
+        "createdAt"
+      ]
+    }
+  },
+  "firestore": {
+    "newsCards/{cardId}": {
+      "schema": "NewsCard",
+      "description": "Collection of user-created news cards"
+    }
+  }
+}
